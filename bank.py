@@ -80,8 +80,6 @@ def creditCalculator(age, gender, incomeSource, income, creditRating, requestedS
 
     creditLimit = min(creaditLimitByIncomeSourse, creaditLimitByCreditRating)
 
-    print(creditLimit)
-
     if requestedSum > creditLimit:
         return 'Credit application denied'
 
@@ -133,5 +131,5 @@ def creditCalculator(age, gender, incomeSource, income, creditRating, requestedS
     return list(['Approved', yearPayment])
 
 if __name__ == "__main__":
-    print('Approved', creaditCalculator(18, 'F', 'self-employed', 2, -1, 1, 20, 'mortgage'))
+    print(creditCalculator(18, 'F', 'self-employed', 2, -1, 1, 20, 'mortgage'))
 
