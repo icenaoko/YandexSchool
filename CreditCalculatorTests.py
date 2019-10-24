@@ -104,5 +104,5 @@ class CreditCalculatorTests(ut.TestCase):
 
 # запускалка тестов, будет ранить все тесты внутри классов унаследованных от ut.TestCase
 # запускаем так: python3 test.py
-if name == "__main__":
+if __name__ == "__main__":
     ut.main()
