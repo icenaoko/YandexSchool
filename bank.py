@@ -1,7 +1,7 @@
 import math
 import numpy
 
-def creaditCalculator(age, gender, incomeSource, income, creditRating, requestedSum, duration, purpose):
+def creditCalculator(age, gender, incomeSource, income, creditRating, requestedSum, duration, purpose):
     # age: not negative int
     if not isinstance(age, int):
         return 'Data validation fails'
