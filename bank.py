@@ -1,136 +1,108 @@
-import math
-import numpy
+from bank import creditCalculator
+import unittest as ut
 
-def creditCalculator(age, gender, incomeSource, income, creditRating, requestedSum, duration, purpose):
-    # age: not negative int
-    if not isinstance(age, int):
-        return 'Data validation fails'
-    
-    # gender: ['F', 'M']
-    if gender not in list(['F', 'M']):
-        return 'Data validation fails'
+class CreditCalculatorTests(ut.TestCase):
+    # конкретный тест
+    def test_wrong_age_data_type(self):
+        self.assertEqual(creditCalculator('N/A', 'F', 'employee', 2, -1, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # incomeSource: [пассивный доход, наёмный работник, собственный бизнес, безработный],
-    if incomeSource not in list(['passive', 'employee', 'self-employed', 'unemployed']):
-        return 'Data validation fails'
+    def test_wrong_sex_data_type(self):
+        self.assertEqual(creditCalculator(18, 'N/A', 'employee', 2, -1, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # income: int,
-    if not isinstance(income, int) or income <= 0:
-        return 'Data validation fails'
+    def test_correct_passive_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'passive', 2, 2, 1, 5, 'mortgage'), list(['Approved', 0.2775]))
 
-    # creditRating: [-2, -1, 0, 1, 2],
-    if creditRating not in range(-2, 3):
-        return 'Data validation fails'
+    def test_correct_employee_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 5, 'mortgage'), list(['Approved', 0.2925]))
 
-    # requestedSum: [0.1 .. 10],
-    if not (isinstance(requestedSum, float) or isinstance(requestedSum, int)) or requestedSum < 0.1 or requestedSum > 10:
-        return 'Data validation fails'
+    def test_correct_self_employed_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'self-employed', 3, 2, 10, 20, 'mortgage'), list(['Approved', 1.15]))
 
-    # duration: [1 .. 20],
-    if duration not in range(1, 21):
-        return 'Data validation fails'
+    def test_wrong_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'N/A', 2, -1, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # purpose: [ипотека, развитие бизнеса, автокредит, потребительский]
-    if purpose not in list(['mortgage', 'business', 'car', 'consumer']):
-        return 'Data validation fails'
+    def test_wrong_income(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 0, -1, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # 1. Если возраст превышает пенсионный возраст на момент возврата кредита. 60 лет для женщин и 65 лет для мужчин.
-    ageFinal = age + duration
-    if gender == 'F' and ageFinal > 60:
-        return 'Credit application denied'
-    elif gender == 'M' and ageFinal > 65:
-        return 'Credit application denied'
+    def test_wrong_credit_rating_under_lower_bound(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -3, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # 2. Если человек не совершеннолетний (младше 18 лет).
-    if age < 18:
-        return 'Credit application denied'
+    def test_correct_zero_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 0, 1, 5, 'mortgage'), list(['Approved', 0.2775]))
 
-    # 3. Если результат деления запрошенной суммы на срок погашения в годах более трети годового дохода.
-    payment = requestedSum / ( duration + 0.0 )
-    incomeThird = income / 3.0
-    if payment > incomeThird:
-        return 'Credit application denied'
+    def test_correct_one_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 1, 1, 5, 'mortgage'), list(['Approved', 0.275]))
 
-    # 4. Если кредитный рейтинг -2.
-    if creditRating == -2:
-        return 'Credit application denied'
+    def test_correct_two_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 2, 5, 10, 'mortgage'), list(['Approved', 0.8151]))
 
-    # 5. Если в источнике дохода указано "безработный".
-    if incomeSource == 'unemployed':
-        return 'Credit application denied'
+    def test_wrong_credit_rating_above_apper_bound(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 3, 1, 5, 'mortgage'), 'Data validation fails')
 
-    # Суммы кредита:
-    # 1. Если работают несколько условий по сумме кредита — выбирается наименьшая. 
-    # 2. Если человек просит сумму, большую возможной для выдачи, кредит не выдаётся.
-    # 3. При пассивном доходе выдаётся кредит на сумму до 1 млн, наёмным работникам — до 5 млн, собственное дело — до 10 млн.
-    # 4. При кредитном рейтинге -1 выдаётся кредит на сумму до 1 млн, при 0 — до 5 млн, при 1 или 2 — до 10 млн
-    if incomeSource == 'passive':
-        creaditLimitByIncomeSourse = 1
-    elif incomeSource == 'employee':
-        creaditLimitByIncomeSourse = 5
-    elif incomeSource == 'self-employed':
-        creaditLimitByIncomeSourse = 10
-    
-    if creditRating == -1:
-        creaditLimitByCreditRating = 1
-    elif creditRating == 0:
-        creaditLimitByCreditRating = 5
-    elif creditRating == 1 or creditRating == 2:
-        creaditLimitByCreditRating = 10
+    def test_wrong_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 'N/A', 1, 5, 'mortgage'), 'Data validation fails')
 
-    creditLimit = min(creaditLimitByIncomeSourse, creaditLimitByCreditRating)
+    def test_wrong_requested_sum_under_lower_bound(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 0.01, 5, 'mortgage'), 'Data validation fails')
 
-    print(creditLimit)
+    def test_wrong_requested_sum_above_apper_bound(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 11, 5, 'mortgage'), 'Data validation fails')
 
-    if requestedSum > creditLimit:
-        return 'Credit application denied'
+    def test_wrong_requested_sum(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 'N/A', 5, 'mortgage'), 'Data validation fails')
 
-    # базовая ставка — 10%
-    persentage = 10
+    def test_wrong_duration_under_lower_bound(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 0.1, 'mortgage'), 'Data validation fails')
 
-    # 1. Все модификаторы процентной ставки суммируются, применяется итоговый модификатор
-    # 2. -2% для ипотеки, -0.5% для развития бизнеса, +1.5% для потребительского кредита
-    # 3. +1.5% для кредитного рейтинга -1, 0% для кредитного рейтинга 0, -0.25% для кредитного рейтинга 1,
-    #    -0.75% для кредитного рейтинга 2
-    # 4. Модификатор в зависимости от запрошенной суммы рассчитывается по формуле [-log(sum)];
-    #    например, для 0.1 млн изменение ставки составит +1%, для 1 млн - 0%, для 10 млн изменение ставки составит -1%
-    # 5. Для пассивного дохода ставка повышается на 0.5%, для наемных работников ставка снижается на 0.25%,
-    #    для заёмщиков с собственным бизнесом ставка повышается на 0.25%
+    def test_wrong_duration(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 'N/A', 'mortgage'), 'Data validation fails')
 
-    if purpose == 'mortgage':
-        persentage = persentage - 2
-    elif purpose == 'business':
-        persentage = persentage - 0.5
-    elif purpose == 'consumer':
-        persentage = persentage + 1.5
+    def test_correct_business_purpose(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 5, 'business'), list(['Approved', 0.3075]))
 
-    if creditRating == -1:
-        persentage = persentage + 1.5
-    elif creditRating == 1:
-        persentage = persentage - 0.25
-    elif creditRating == 2:
-        persentage = persentage - 0.75
+    def test_correct_car_purpose(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 5, 'car'), list(['Approved', 0.3125]))
 
-    persentage = persentage - math.log(requestedSum, 10)
+    def test_correct_consumer_purpose(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 5, 'consumer'), list(['Approved', 0.3275]))
 
-    if incomeSource == 'passive':
-        persentage = persentage + 0.5
-    elif incomeSource == 'employee':
-        persentage = persentage - 0.25
-    elif incomeSource == 'self-employed':
-        persentage = persentage + 0.25
-    
-    # Годовой платеж по кредиту определяется по следующей формуле: 
-    # (<сумма кредита> * (1 + <срок погашения> * (<базовая ставка> + <модификаторы>)/100)) / <срок погашения>
+    def test_wrong_purpose(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1, 5, 'N/A'), 'Data validation fails')
 
-    yearPayment = requestedSum * (1 + duration * persentage / ( 100 + 0.0) ) / ( duration + 0.0 )
-    yearPayment = round(yearPayment, 4)
+    def test_wrong_pension_age_female(self):
+        self.assertEqual(creditCalculator(56, 'F', 'employee', 2, -1, 1, 5, 'mortgage'), 'Credit application denied')
 
-    # 6. Если годовой платёж (включая проценты) больше половины дохода.
-    if yearPayment > ( income * 0.5 ):
-        return 'Credit application denied'
+    def test_wrong_pension_male(self):
+        self.assertEqual(creditCalculator(61, 'F', 'employee', 2, -1, 1, 5, 'mortgage'), 'Credit application denied')
 
-    return list(['Approved', yearPayment])
+    def test_wrong_age_underage(self):
+        self.assertEqual(creditCalculator(15, 'F', 'employee', 2, -1, 1, 5, 'mortgage'), 'Credit application denied')
 
-#print('Approved', creaditCalculator(18, 'F', 'self-employed', 2, -1, 1, 20, 'mortgage'))
+    def test_wrong_requested_sum_more_than_third_of_income(self):
+       self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 3, 3, 'mortgage'), 'Credit application denied')
 
+    def test_wrong_low_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -2, 1, 5, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_income_source_unemployed(self):
+        self.assertEqual(creditCalculator(18, 'F', 'unemployed', 2, -1, 1, 5, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_yearly_payment_mora_than_half_of_income(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 1, 0, 3, 9, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_requested_sum_more_than_allowed_passive_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'passive', 2, 2, 2, 5, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_requested_sum_more_than_allowed_employee_income_source(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 2, 5.1, 10, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_requested_sum_more_than_allowed_minus_one_credit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, -1, 1.1, 5, 'mortgage'), 'Credit application denied')
+
+    def test_wrong_requested_sum_more_than_allowed_zero_creadit_rating(self):
+        self.assertEqual(creditCalculator(18, 'F', 'employee', 2, 0, 5.2, 5, 'mortgage'), 'Credit application denied')
+
+# запускалка тестов, будет ранить все тесты внутри классов унаследованных от ut.TestCase
+# запускаем так: python3 test.py
+if __name__ == "__main__":
+    ut.main()
