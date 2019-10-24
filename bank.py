@@ -132,5 +132,6 @@ def creditCalculator(age, gender, incomeSource, income, creditRating, requestedS
 
     return list(['Approved', yearPayment])
 
-#print('Approved', creaditCalculator(18, 'F', 'self-employed', 2, -1, 1, 20, 'mortgage'))
+if __name__ == "__main__":
+    print('Approved', creaditCalculator(18, 'F', 'self-employed', 2, -1, 1, 20, 'mortgage'))
 
