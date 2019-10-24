@@ -8,6 +8,6 @@ https://docs.google.com/spreadsheets/d/1bGiaY2GgHbdGJWYgNXypx5GYJjSzTnx0kiykx_VS
 для запуска фунции, рассчитывающей возможность выдачи кредита
 `python3 .\bank.py`
 
-# Задание 3
+## Задание 3
 для запуска тестов
 `python3 .\CreditCalculatorTests.py`
